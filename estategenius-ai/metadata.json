@@ -1,0 +1,6 @@
+{
+  "name": "EstateGenius AI - Real Estate & PropTech OS",
+  "description": "Elite AI-powered Real Estate & Property Tech Operating System with Three.js 3D Interactive Scenes, Google Maps Routing, Firebase Authentication, and PayPal Payment Engine.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

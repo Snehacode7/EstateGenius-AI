@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Authenticated user profile and role",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "displayName": { "type": "string", "description": "Display name" },
+        "role": { "type": "string", "enum": ["client", "owner"], "description": "Active persona" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Property token deposit or lease reservation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Booking reference ID" },
+        "propertyId": { "type": "string", "description": "Referenced Property ID" },
+        "propertyTitle": { "type": "string", "description": "Property name" },
+        "userId": { "type": "string", "description": "Buyer or tenant user UID" },
+        "userEmail": { "type": "string", "description": "Buyer or tenant email" },
+        "amount": { "type": "number", "description": "Payment amount in USD" },
+        "paymentCategory": { "type": "string", "description": "Category of payment" },
+        "transactionId": { "type": "string", "description": "PayPal transaction ID" },
+        "status": { "type": "string", "description": "Payment and reservation status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Booking timestamp" }
+      },
+      "required": ["propertyId", "userId", "amount", "transactionId"]
+    },
+    "PropertyFavorite": {
+      "title": "PropertyFavorite",
+      "description": "User saved property listing",
+      "type": "object",
+      "properties": {
+        "propertyId": { "type": "string", "description": "Property ID" },
+        "userId": { "type": "string", "description": "User UID" },
+        "savedAt": { "type": "string", "format": "date-time", "description": "Saved timestamp" }
+      },
+      "required": ["propertyId", "userId"]
+    },
+    "UserFavorite": {
+      "title": "UserFavorite",
+      "description": "User persistent cloud-synced favorite property record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique composite identifier (userId_propertyId)" },
+        "userId": { "type": "string", "description": "Firebase Auth user UID" },
+        "userEmail": { "type": "string", "description": "User email address" },
+        "propertyId": { "type": "string", "description": "Target property identifier" },
+        "propertyTitle": { "type": "string", "description": "Property title" },
+        "propertyType": { "type": "string", "description": "Rent or Sale" },
+        "propertyCategory": { "type": "string", "description": "Residential or Commercial" },
+        "location": { "type": "string", "description": "City or neighborhood location" },
+        "priceDisplay": { "type": "string", "description": "Display price or rental rate" },
+        "image": { "type": "string", "description": "Main cover image URL" },
+        "notes": { "type": "string", "description": "User personal private notes" },
+        "savedAt": { "type": "string", "format": "date-time", "description": "Timestamp when favorited" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp when notes updated" }
+      },
+      "required": ["id", "userId", "propertyId", "propertyTitle", "savedAt"]
+    },
+    "MaintenanceTicket": {
+      "title": "MaintenanceTicket",
+      "description": "Tenant maintenance and repair service ticket",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Ticket unique identifier" },
+        "propertyId": { "type": "string", "description": "Property ID referenced" },
+        "propertyTitle": { "type": "string", "description": "Property title" },
+        "issueCategory": { "type": "string", "description": "Category such as PLUMBING, ELECTRICAL, HVAC" },
+        "issue": { "type": "string", "description": "Detailed description of the issue" },
+        "urgency": { "type": "string", "description": "Urgency rating" },
+        "severity": { "type": "string", "description": "Severity rating" },
+        "estimatedCostUsd": { "type": "number", "description": "Estimated repair cost in USD" },
+        "status": { "type": "string", "description": "Current ticket status" },
+        "reportedBy": { "type": "string", "description": "Reporter email or user ID" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["propertyId", "issueCategory", "urgency", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles indexed by UID"
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Property escrow bookings and payment logs"
+    },
+    "/users/{userId}/favorites/{propertyId}": {
+      "schema": { "$ref": "#/entities/PropertyFavorite" },
+      "description": "User saved properties"
+    },
+    "/user_favorites/{favoriteId}": {
+      "schema": { "$ref": "#/entities/UserFavorite" },
+      "description": "Persistent user cloud favorites collection across sessions"
+    },
+    "/maintenance_tickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/MaintenanceTicket" },
+      "description": "Tenant maintenance requests and contractor dispatch tickets"
+    }
+  }
+}

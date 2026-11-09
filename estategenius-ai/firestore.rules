@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create, update: if isOwner(userId) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() <= 200;
+      allow delete: if false;
+
+      // User favorites subcollection
+      match /favorites/{propertyId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Dedicated User Favorites Collection (Persistent across sessions)
+    match /user_favorites/{favoriteId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.propertyId is string &&
+        request.resource.data.propertyTitle is string;
+      allow update: if isSignedIn() &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // Bookings Collection
+    match /bookings/{bookingId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.amount is number &&
+        request.resource.data.propertyId is string &&
+        request.resource.data.transactionId is string;
+      allow update, delete: if false;
+    }
+
+    // Maintenance Tickets Collection
+    match /maintenance_tickets/{ticketId} {
+      allow read: if true;
+      allow create: if request.resource.data.propertyId is string &&
+        request.resource.data.issueCategory is string &&
+        request.resource.data.status is string;
+      allow update: if request.resource.data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED'];
+      allow delete: if false;
+    }
+  }
+}
